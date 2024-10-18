@@ -1,47 +1,39 @@
 #include <string>
 #include <vector>
-#include <deque>
+#include <queue> // priority_queue
 #include <algorithm> // max
 
 using namespace std;
 
 int solution(vector<int> priorities, int location) {
     int answer = 0;
-    bool flag = false; // 해당 프로세스가 실행될 때 true
     int size = priorities.size();
 
-    deque<pair<int,int>> dq;
+    // 우선순위 큐를 max heap으로 선언
+    priority_queue<int> pq;
     
-    for(int i=0;i<size;i++) {
-        dq.push_back({priorities[i], i});
+    for (int priority : priorities) {
+        pq.push(priority); // 우선순위를 큐에 추가
     }
-    
-    while (!flag) {
-        int dq_max = dq.front().first;
-        int dq_size = dq.size();
-        
-        for (int i = 1; i < dq.size(); i++) {
-            dq_max = max(dq_max, dq[i].first); // 우선순위 최댓값 저장
-        }
-            
-        
-        for (int i = 0; i < dq_size; i++) {
-            // 최댓값과 현재 우선순위가 같을 경우
-            if (dq_max == dq.front().first) {
-                answer++;
-                // 해당 프로세스인 경우
-                if (dq.front().second == location) {
-                    flag = true;
-                    break;
-                }
-                dq.pop_front();
-                break;
-            // 아닌 경우: 대기큐에서 원소를 뒤로 이동
-            } else {
-                dq.push_back(dq.front());
-                dq.pop_front();
+
+    // 원래의 인덱스를 추적하기 위한 변수
+    int idx = 0;
+
+    while (!pq.empty()) {
+        // 가장 높은 우선순위를 가진 프로세스
+        int curMax = pq.top();
+
+        // 큐의 맨 앞 원소를 확인
+        if (curMax == priorities[idx]) {
+            answer++; // 프로세스 처리
+            if (idx == location) { // 해당 프로세스가 location에 있는 경우
+                break; // 루프 종료
             }
+            pq.pop(); // 처리한 프로세스 제거
         }
+        idx++; // 다음 인덱스 이동
+        if (idx >= size) idx = 0; // 인덱스가 끝에 도달하면 다시 처음으로
     }
+
     return answer;
 }
