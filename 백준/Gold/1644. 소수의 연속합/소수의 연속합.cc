@@ -9,10 +9,6 @@
 #include <iostream>
 #include <vector>
 using namespace std;
-
-  int limit = 4000002;
-  vector<bool> isPrime(limit, true);
-  vector<int> primes;
             
 int main() {
   ios::sync_with_stdio(0);
@@ -20,6 +16,15 @@ int main() {
 
   int n;
 	cin >> n;
+
+  if (n < 2) {
+    cout << 0;
+    return 0;
+  }
+
+  int limit = n+1;
+  vector<bool> isPrime(limit, true);
+  vector<int> primes;
 
   for (int i=2; i*i<limit; i++) {
       if (isPrime[i]) {
@@ -35,15 +40,15 @@ int main() {
       }
   }
 
-  int st = 0, en = 1, ans = 0;
-  int sum = primes[0]; // st부터 en-1까지의 합
+  int st = 0, en = 1, ans = 0, sum = primes[0];
 
-  while(1) {
-    if(sum == n) ans++; // 일치하면 답 1 증가
-    if(sum <= n) sum += primes[en++]; // 답을 찾았거나 합이 아직 작다면 소수 하나 더 더함
-    if(sum > n) sum -= primes[st++]; // 합이 더 크면 맨 앞 소수 제거
-
-    if(en-1 == primes.size()) break;
+  while (en <= primes.size()) {
+      if (sum <= n) {
+          if (sum == n) ans++;
+          sum += primes[en++];
+      } else {
+          sum -= primes[st++];
+      }
   }
   
   cout << ans;
