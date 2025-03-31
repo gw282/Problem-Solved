@@ -1,33 +1,40 @@
 #include <string>
 #include <vector>
 #include <unordered_set>
-#include <algorithm>
 
 using namespace std;
 
+unordered_set<int> primes; // 소수를 저장할 집합
+vector<bool> visited; // 방문 여부 체크
+
 bool isPrime(int num) {
-    if(num <= 1) return false;
-    
-    for(int i = 2;i*i <= num;i++) {
-        if(num % i == 0) return false;
+    if (num <= 1) return false;
+    for (int i = 2; i * i <= num; i++) {
+        if (num % i == 0) return false;
     }
     return true;
 }
 
+// 백트래킹을 이용하여 숫자를 조합하여 생성
+void dfs(string& numbers, string current) {
+    if (!current.empty()) {
+        int num = stoi(current);
+        if (isPrime(num)) {
+            primes.insert(num);
+        }
+    }
+
+    for (int i = 0; i < numbers.size(); i++) {
+        if (!visited[i]) {
+            visited[i] = true;
+            dfs(numbers, current + numbers[i]);
+            visited[i] = false;
+        }
+    }
+}
+
 int solution(string numbers) {
-    unordered_set<int> nums;
-    
-    sort(numbers.begin(),numbers.end());
-    
-    do {
-        for (int i = 1; i <= numbers.size(); ++i) {
-            string temp = numbers.substr(0, i); // 현재 순열의 부분 문자열 생성
-            int num_temp = stoi(temp); // 부분 문자열을 숫자로 변환
-            if (isPrime(num_temp)) {
-                nums.insert(num_temp); // 소수인 경우 집합에 추가
-            }
-        } 
-    } while (next_permutation(numbers.begin(), numbers.end())); // 다음 순열 생성
-    
-    return nums.size();
+    visited.resize(numbers.size(), false);
+    dfs(numbers, "");
+    return primes.size();
 }
