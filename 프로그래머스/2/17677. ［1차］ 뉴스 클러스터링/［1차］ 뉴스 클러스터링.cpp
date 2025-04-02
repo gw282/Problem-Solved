@@ -1,65 +1,43 @@
 #include <string>
-#include <cctype>
-#include <vector>
-#include <set>
-#include <iostream>
-
+#include <unordered_map>
+#include <cmath>
 using namespace std;
 
-bool isAlphabet(char c) {
-    return (c <= 'z' && c >= 'a');
+// 문자열을 두 글자씩 끊어서 다중집합을 생성하는 함수
+void getElements(string str, unordered_map<string, int>& um) {
+    for (auto &c : str) c = tolower(c); // 대소문자 구분 없도록 소문자로 변환
+    
+    for (int i = 0; i < str.size() - 1; i++) {
+        if (isalpha(str[i]) && isalpha(str[i + 1])) { // 알파벳 쌍인지 확인
+            um[str.substr(i, 2)]++; // 두 글자씩 끊어서 개수 증가
+        }
+    }
 }
 
 int solution(string str1, string str2) {
-    int answer = 0;
-    int in = 0;
-    int un = 0;
+    unordered_map<string, int> um1, um2;
     
-    // 소문자로 변환
-    string s1 = "", s2 = "";
-    for(char &c : str1) {
-        s1 += tolower(c);
-    }
-    for(char &c : str2) {
-        s2 += tolower(c);
-    }
+    getElements(str1, um1); // str1을 다중집합으로 변환
+    getElements(str2, um2); // str2를 다중집합으로 변환
     
-    cout << s1 << ' ' << s2 << '\n';
+    int inter_cnt = 0, union_cnt = 0;
 
-    multiset<string> sub1;
-    multiset<string> sub2;
-    
-    // 부분 문자열을 저장
-    for(int i=0;i<s1.length()-1;i++) {
-        char c1 = s1[i], c2 = s1[i+1];
-        if(isAlphabet(c1) && isAlphabet(c2)) {
-            sub1.insert(s1.substr(i,2));
+    // 교집합 개수 계산
+    for (auto &e : um1) {
+        if (um2[e.first]) { // str2에도 존재하는 경우
+            inter_cnt += min(e.second, um2[e.first]); // 최소값 만큼 교집합 포함
         }
     }
-    
-    for(int i=0;i<s2.length()-1;i++) {
-        char c1 = s2[i], c2 = s2[i+1];
-        if(isAlphabet(c1) && isAlphabet(c2)) {
-            sub2.insert(s2.substr(i,2));
-        }
+
+    // 합집합 개수 계산
+    for (auto &e : um1) {
+        union_cnt += max(e.second, um2[e.first]); // str2에도 있으면 최대값 사용
+        um2.erase(e.first); // 중복 계산 방지
     }
     
-    // 교집합 계산
-    for(auto it = sub1.begin(); it != sub1.end();) {
-        auto jt = sub2.find(*it);  // sub2에서 해당 원소 찾기
-        if(jt != sub2.end()) {  // 찾으면 교집합이므로 삭제
-            sub2.erase(jt);  // sub2에서 제거
-            it = sub1.erase(it);  // sub1에서 제거
-            in++;
-        } else {
-            it++;  // 교집합이 없으면 그냥 다음 원소로
-        }
+    for (auto &e : um2) { // 남은 str2의 원소 추가
+        union_cnt += e.second;
     }
-    
-    // 합집합 계산
-    un = in + sub1.size() + sub2.size();
-    
-    if(un == 0) answer = 65536;
-    else answer =in * 65536 / un;
-    return answer;
+
+    return union_cnt == 0 ? 65536 : floor((double)inter_cnt * 65536 / union_cnt);
 }
